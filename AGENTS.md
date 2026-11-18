@@ -1,3 +1,4 @@
+
 # AGENTS.md — Instructions Codex
 
 Ce dépôt concerne **l'authentification continue comportementale sur poste de travail** (clavier et souris), **pas** la détection de bots sur un site web.
