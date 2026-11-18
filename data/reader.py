@@ -1,33 +1,34 @@
-"""Lecteur du CSV de features (contrat v0.1)."""
+from pathlib import Path
 import pandas as pd
 
-ID_COLUMNS = ["user_id", "session_id", "window_id"]
 FEATURE_COLUMNS = [
-    "key_count",
-    "hold_mean_ms",
-    "interkey_mean_ms",
     "mouse_distance_px",
     "mouse_speed_mean_px_s",
+    "mouse_speed_std_px_s",
+    "direction_change_count",
     "click_count",
+    "click_interval_mean_ms",
+    "scroll_event_count",
+    "scroll_distance_px",
 ]
-EXPECTED_COLUMNS = ID_COLUMNS + FEATURE_COLUMNS
+METADATA_COLUMNS = ["participant_id", "session_id", "window_id", "label", "bot_config"]
+ALL_COLUMNS = METADATA_COLUMNS + FEATURE_COLUMNS
+VALID_LABELS = {"human", "bot"}
 
 
-def read_features(path):
-    """Lit le CSV et vérifie les colonnes (noms, ordre, nombre).
+def validate_columns(df: pd.DataFrame) -> None:
+    missing = [c for c in ALL_COLUMNS if c not in df.columns]
+    extra = [c for c in df.columns if c not in ALL_COLUMNS]
+    if missing or extra:
+        raise ValueError(f"missing columns: {missing}; unexpected columns: {extra}")
+    if list(df.columns) != ALL_COLUMNS:
+        raise ValueError(f"column order must be {ALL_COLUMNS}")
+    bad = set(df["label"].dropna().unique()) - VALID_LABELS
+    if bad:
+        raise ValueError(f"invalid labels: {sorted(bad)}")
 
-    Les cellules vides restent NaN : donnée absente, jamais 0.
-    """
-    df = pd.read_csv(path)
-    columns = list(df.columns)
 
-    if columns != EXPECTED_COLUMNS:
-        missing = [c for c in EXPECTED_COLUMNS if c not in columns]
-        extra = [c for c in columns if c not in EXPECTED_COLUMNS]
-        if missing or extra:
-            raise ValueError(f"Colonnes invalides. Manquantes: {missing}, en trop: {extra}")
-        raise ValueError(f"Mauvais ordre des colonnes. Attendu: {EXPECTED_COLUMNS}")
-
-    for col in FEATURE_COLUMNS:
-        df[col] = pd.to_numeric(df[col], errors="raise")
+def read_features(path) -> pd.DataFrame:
+    df = pd.read_csv(Path(path))
+    validate_columns(df)
     return df

@@ -1,7 +1,7 @@
-user_id,session_id,window_id,key_count,hold_mean_ms,interkey_mean_ms,mouse_distance_px,mouse_speed_mean_px_s,click_count
-demo_user_01,demo_session_01,w0001,85,115.4,210.2,1500.0,160.0,6
-demo_user_01,demo_session_01,w0002,92,112.8,198.5,1720.5,171.3,8
-demo_user_01,demo_session_01,w0003,78,118.1,225.0,1310.2,142.7,4
-demo_user_02,demo_session_02,w0001,60,130.2,260.4,900.0,95.5,3
-demo_user_02,demo_session_02,w0002,65,128.7,255.1,,,
-demo_user_02,demo_session_02,w0003,,,,1100.0,120.4,5
+participant_id,session_id,window_id,label,bot_config,mouse_distance_px,mouse_speed_mean_px_s,mouse_speed_std_px_s,direction_change_count,click_count,click_interval_mean_ms,scroll_event_count,scroll_distance_px
+p01,sess-h-001,w0001,human,,1200.0,180.0,55.0,8,4,850.0,6,720.0
+p01,sess-h-001,w0002,human,,640.0,120.0,70.0,11,2,1900.0,3,300.0
+p02,sess-h-002,w0001,human,,980.0,150.0,62.0,9,3,1200.0,5,540.0
+b01,sess-b-001,w0001,bot,linear-fast,2400.0,400.0,4.0,0,10,100.0,0,0.0
+b01,sess-b-001,w0002,bot,linear-fast,2380.0,398.0,3.5,0,10,101.0,0,0.0
+b02,sess-b-002,w0001,bot,no-mouse,0.0,,,0,0,,12,1200.0
