@@ -3,3 +3,5 @@ uvicorn
 fastapi
 pandas
 numpy
+streamlit>=1.40
+httpx2
