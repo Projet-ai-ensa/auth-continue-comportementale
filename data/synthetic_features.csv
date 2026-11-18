@@ -1,0 +1,7 @@
+user_id,session_id,window_id,key_count,hold_mean_ms,interkey_mean_ms,mouse_distance_px,mouse_speed_mean_px_s,click_count
+demo_user_01,demo_session_01,w0001,85,115.4,210.2,1500.0,160.0,6
+demo_user_01,demo_session_01,w0002,92,112.8,198.5,1720.5,171.3,8
+demo_user_01,demo_session_01,w0003,78,118.1,225.0,1310.2,142.7,4
+demo_user_02,demo_session_02,w0001,60,130.2,260.4,900.0,95.5,3
+demo_user_02,demo_session_02,w0002,65,128.7,255.1,,,
+demo_user_02,demo_session_02,w0003,,,,1100.0,120.4,5
