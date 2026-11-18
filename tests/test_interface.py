@@ -32,17 +32,17 @@ def test_output_is_simulated():
     assert out.model_version == "mock-v0"
 
 
-def test_session_id_is_copied():
-    out = predict(make_input())
-    assert out.session_id == "s1"
-    assert out.window_id == "w0001"
-
-
 def test_prediction_placeholder():
     out = predict(make_input())
     assert out.prediction == "HUMAN"
-    assert out.risk_level == "LOW"
-    assert out.data_quality == "SUFFICIENT"
+
+
+def test_output_contains_only_model_fields():
+    out = predict(make_input())
+    assert set(out.model_dump().keys()) == {
+        "prediction",
+        "model_version",
+    }
 
 
 def test_feature_order_is_fixed():

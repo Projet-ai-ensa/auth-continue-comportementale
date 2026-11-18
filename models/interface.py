@@ -32,22 +32,14 @@ class PredictInput(BaseModel):
 
 
 class PredictOutput(BaseModel):
-    session_id: str
-    window_id: str
     prediction: str
-    risk_level: str
     model_version: str = MODEL_VERSION
-    data_quality: str = "SUFFICIENT"
 
 
 def predict(data: PredictInput) -> PredictOutput:
     """Return a placeholder prediction until the ML model is integrated."""
 
     return PredictOutput(
-        session_id=data.session_id,
-        window_id=data.window_id,
         prediction="HUMAN",
-        risk_level="LOW",
         model_version=MODEL_VERSION,
-        data_quality="SUFFICIENT",
     )
