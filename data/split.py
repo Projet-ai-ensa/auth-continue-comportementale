@@ -12,13 +12,17 @@ def split_by_participant(
     """Split rows into train/val/test so that each participant is in exactly one set.
 
     Participants are split separately for each label (human / bot), so every
-    set contains both classes.
+    set contains both classes. Sessions never span two sets.
     """
     if abs(train + val + test - 1.0) > 1e-9:
         raise ValueError("train + val + test must equal 1.0")
-    for col in ("participant_id", "label"):
+    for col in ("participant_id", "session_id", "label"):
         if col not in df.columns:
             raise ValueError(f"missing column: {col}")
+
+    participants_per_session = df.groupby("session_id")["participant_id"].nunique()
+    if (participants_per_session > 1).any():
+        raise ValueError("a session belongs to more than one participant")
 
     labels_per_participant = df.groupby("participant_id")["label"].nunique()
     if (labels_per_participant > 1).any():
