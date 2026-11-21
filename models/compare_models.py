@@ -1,3 +1,5 @@
+import sys
+
 import pandas as pd
 from sklearn.ensemble import HistGradientBoostingClassifier, RandomForestClassifier
 from sklearn.impute import SimpleImputer
@@ -6,7 +8,7 @@ from sklearn.metrics import accuracy_score, confusion_matrix
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 
-from data.reader import FEATURE_COLUMNS
+from data.reader import FEATURE_COLUMNS, read_features
 from data.split import split_by_participant
 from models.train_baseline import make_fake_data
 
@@ -33,7 +35,11 @@ def build_models():
 
 
 if __name__ == "__main__":
-    df = make_fake_data()
+    if len(sys.argv) > 1:
+        df = read_features(sys.argv[1])  # vraies données de Saad
+    else:
+        df = make_fake_data()            # données fictives
+
     train, val, _test = split_by_participant(df)  # le test n'est pas utilisé ici
 
     rows = []
