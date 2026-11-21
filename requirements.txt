@@ -2,8 +2,7 @@ pytest>=8.0
 uvicorn
 fastapi
 pandas
-<<<<<<< HEAD
+numpy
 scikit-learn>=1.9.1
-=======
 streamlit>=1.40
->>>>>>> origin/main
+httpx2

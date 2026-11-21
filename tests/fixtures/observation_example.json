@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0",
+  "session_id": "session-pseudonyme",
+  "window_id": "window-0001",
+  "window_started_at": "2026-11-17T10:00:00Z",
+  "window_duration_ms": 30000,
+  "collector_version": "0.1.0",
+  "browser_features": {
+    "mouse_distance_px": 1200.0,
+    "mouse_speed_mean_px_s": 180.0,
+    "mouse_speed_std_px_s": 55.0,
+    "direction_change_count": 8,
+    "click_count": 4,
+    "click_interval_mean_ms": 850.0,
+    "scroll_event_count": 6,
+    "scroll_distance_px": 720.0
+  }
+}
