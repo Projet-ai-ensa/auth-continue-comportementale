@@ -1,13 +1,19 @@
-
+from pathlib import Path
 from typing import Optional
+
+import joblib
+import pandas as pd
 from pydantic import BaseModel
 
 from data.reader import FEATURE_COLUMNS
 
 SCHEMA_VERSION = "1.0"
 MODEL_VERSION = "mock-v0"
+MODEL_PATH = Path(__file__).parent / "baseline_fake.joblib"
 
 FEATURE_ORDER = FEATURE_COLUMNS
+
+_artifact = None
 
 
 class SessionFeatures(BaseModel):
@@ -36,10 +42,27 @@ class PredictOutput(BaseModel):
     model_version: str = MODEL_VERSION
 
 
-def predict(data: PredictInput) -> PredictOutput:
-    """Return a placeholder prediction until the ML model is integrated."""
+def _load_artifact():
+    """Charge le modèle entraîné une seule fois, s'il existe."""
+    global _artifact
+    if _artifact is None and MODEL_PATH.exists():
+        _artifact = joblib.load(MODEL_PATH)
+    return _artifact
 
+
+def predict(data: PredictInput) -> PredictOutput:
+    artifact = _load_artifact()
+
+    # Pas de modèle entraîné : on garde la réponse simulée.
+    if artifact is None:
+        return PredictOutput(prediction="HUMAN", model_version=MODEL_VERSION)
+
+    features = data.browser_features.model_dump()
+    order = artifact["feature_order"]
+    row = pd.DataFrame([[features[c] for c in order]], columns=order).astype(float)
+
+    label = artifact["pipeline"].predict(row)[0]
     return PredictOutput(
-        prediction="HUMAN",
-        model_version=MODEL_VERSION,
+        prediction=str(label).upper(),
+        model_version=artifact["model_version"],
     )
