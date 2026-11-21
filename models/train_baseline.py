@@ -4,70 +4,91 @@ import pandas as pd
 from sklearn.impute import SimpleImputer
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score, confusion_matrix
-from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 
-from data.reader import FEATURE_COLUMNS
+from data.reader import ALL_COLUMNS, FEATURE_COLUMNS
+from data.split import split_by_participant
 
 
-def make_fake_data(n=200, seed=0):
-    """Données FICTIVES, seulement pour tester la chaîne."""
+def make_fake_data(n_humans=20, n_bots=20, windows=10, seed=0):
+    """Données FICTIVES (un DataFrame comme le CSV de Saad), pour tester la chaîne."""
     rng = np.random.default_rng(seed)
-    humans = pd.DataFrame({
-        "mouse_distance_px": rng.normal(1000, 350, n).clip(50),
-        "mouse_speed_mean_px_s": rng.normal(150, 40, n).clip(10),
-        "mouse_speed_std_px_s": rng.normal(60, 15, n).clip(5),
-        "direction_change_count": rng.poisson(9, n),
-        "click_count": rng.poisson(3, n),
-        "click_interval_mean_ms": rng.normal(1300, 400, n).clip(200),
-        "scroll_event_count": rng.poisson(5, n),
-        "scroll_distance_px": rng.normal(600, 200, n).clip(0),
-    })
-    h = n // 2
-    linear = pd.DataFrame({  # bot qui bouge en ligne droite, très vite
-        "mouse_distance_px": rng.normal(2400, 100, h),
-        "mouse_speed_mean_px_s": rng.normal(400, 10, h),
-        "mouse_speed_std_px_s": rng.normal(4, 1, h).clip(0),
-        "direction_change_count": np.zeros(h, dtype=int),
-        "click_count": np.full(h, 10),
-        "click_interval_mean_ms": rng.normal(100, 5, h),
-        "scroll_event_count": np.zeros(h, dtype=int),
-        "scroll_distance_px": np.zeros(h),
-    })
-    no_mouse = pd.DataFrame({  # bot qui ne fait que défiler
-        "mouse_distance_px": np.zeros(n - h),
-        "mouse_speed_mean_px_s": np.nan,
-        "mouse_speed_std_px_s": np.nan,
-        "direction_change_count": np.zeros(n - h, dtype=int),
-        "click_count": np.zeros(n - h, dtype=int),
-        "click_interval_mean_ms": np.nan,
-        "scroll_event_count": rng.poisson(12, n - h),
-        "scroll_distance_px": rng.normal(1200, 200, n - h),
-    })
-    X = pd.concat([humans, linear, no_mouse], ignore_index=True)[FEATURE_COLUMNS]
-    # un intervalle entre clics n'existe pas s'il y a moins de 2 clics
-    X.loc[X["click_count"] < 2, "click_interval_mean_ms"] = np.nan
-    y = np.array(["human"] * n + ["bot"] * n)
-    return X, y
+    rows = []
+
+    for i in range(n_humans):
+        pid = f"p{i:02d}"
+        style = rng.normal(1.0, 0.2)  # habitude personnelle de ce participant
+        for w in range(windows):
+            clicks = int(rng.poisson(3 * style))
+            rows.append({
+                "participant_id": pid, "session_id": f"sess-{pid}",
+                "window_id": f"w{w:04d}", "label": "human", "bot_config": None,
+                "mouse_distance_px": max(50, rng.normal(1000 * style, 300)),
+                "mouse_speed_mean_px_s": max(10, rng.normal(150 * style, 35)),
+                "mouse_speed_std_px_s": max(5, rng.normal(60, 15)),
+                "direction_change_count": int(rng.poisson(9)),
+                "click_count": clicks,
+                "click_interval_mean_ms": max(200, rng.normal(1300, 400)) if clicks >= 2 else np.nan,
+                "scroll_event_count": int(rng.poisson(5)),
+                "scroll_distance_px": max(0, rng.normal(600, 200)),
+            })
+
+    for i in range(n_bots):
+        pid = f"b{i:02d}"
+        no_mouse = i % 2 == 1
+        for w in range(windows):
+            if no_mouse:  # bot qui ne fait que défiler
+                rows.append({
+                    "participant_id": pid, "session_id": f"sess-{pid}",
+                    "window_id": f"w{w:04d}", "label": "bot", "bot_config": "no-mouse",
+                    "mouse_distance_px": 0.0, "mouse_speed_mean_px_s": np.nan,
+                    "mouse_speed_std_px_s": np.nan, "direction_change_count": 0,
+                    "click_count": 0, "click_interval_mean_ms": np.nan,
+                    "scroll_event_count": int(rng.poisson(12)),
+                    "scroll_distance_px": rng.normal(1200, 200),
+                })
+            else:  # bot qui bouge en ligne droite, très vite
+                rows.append({
+                    "participant_id": pid, "session_id": f"sess-{pid}",
+                    "window_id": f"w{w:04d}", "label": "bot", "bot_config": "linear-fast",
+                    "mouse_distance_px": rng.normal(2400, 100),
+                    "mouse_speed_mean_px_s": rng.normal(400, 10),
+                    "mouse_speed_std_px_s": max(0, rng.normal(4, 1)),
+                    "direction_change_count": 0, "click_count": 10,
+                    "click_interval_mean_ms": rng.normal(100, 5),
+                    "scroll_event_count": 0, "scroll_distance_px": 0.0,
+                })
+
+    return pd.DataFrame(rows)[ALL_COLUMNS]
+
+
+def evaluate(model, df, name):
+    pred = model.predict(df[FEATURE_COLUMNS])
+    tn, fp, fn, tp = confusion_matrix(df["label"], pred, labels=["human", "bot"]).ravel()
+    print(f"--- {name} ({len(df)} fenêtres) ---")
+    print("accuracy:", round(accuracy_score(df["label"], pred), 3))
+    print(f"humains pris pour des bots (faux positifs): {fp}")
+    print(f"bots pris pour des humains (faux négatifs): {fn}")
 
 
 if __name__ == "__main__":
-    X, y = make_fake_data()
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.25, stratify=y, random_state=0
-    )
+    df = make_fake_data()
+    train, val, test = split_by_participant(df)
+
+    # Sécurité : aucun participant ne doit être dans deux ensembles
+    ids = [set(d["participant_id"]) for d in (train, val, test)]
+    assert not (ids[0] & ids[1] or ids[0] & ids[2] or ids[1] & ids[2])
 
     model = Pipeline([
         ("imputer", SimpleImputer(strategy="median", add_indicator=True)),
         ("scaler", StandardScaler()),
         ("clf", LogisticRegression()),
     ])
-    model.fit(X_train, y_train)
+    model.fit(train[FEATURE_COLUMNS], train["label"])
 
-    pred = model.predict(X_test)
-    print("accuracy:", accuracy_score(y_test, pred))
-    print(confusion_matrix(y_test, pred, labels=["human", "bot"]))
+    evaluate(model, val, "validation")
+    # Le jeu de test ne se regarde qu'une seule fois, à la toute fin du projet.
 
     joblib.dump(
         {
