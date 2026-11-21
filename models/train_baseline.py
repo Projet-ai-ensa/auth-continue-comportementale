@@ -1,3 +1,5 @@
+import sys
+
 import joblib
 import numpy as np
 import pandas as pd
@@ -7,7 +9,7 @@ from sklearn.metrics import accuracy_score, confusion_matrix
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 
-from data.reader import ALL_COLUMNS, FEATURE_COLUMNS
+from data.reader import ALL_COLUMNS, FEATURE_COLUMNS, read_features
 from data.split import split_by_participant
 
 
@@ -73,7 +75,13 @@ def evaluate(model, df, name):
 
 
 if __name__ == "__main__":
-    df = make_fake_data()
+    if len(sys.argv) > 1:
+        df = read_features(sys.argv[1])  # vraies données de Saad
+        model_version = "baseline-v0"
+    else:
+        df = make_fake_data()            # données fictives
+        model_version = "baseline-fake-v0"
+
     train, val, test = split_by_participant(df)
 
     # Sécurité : aucun participant ne doit être dans deux ensembles
@@ -94,7 +102,7 @@ if __name__ == "__main__":
         {
             "pipeline": model,
             "feature_order": FEATURE_COLUMNS,
-            "model_version": "baseline-fake-v0",
+            "model_version": model_version,
         },
         "models/baseline_fake.joblib",
     )
