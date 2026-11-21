@@ -1,6 +1,6 @@
-
 from typing import Optional
-from pydantic import BaseModel
+
+from pydantic import BaseModel, ConfigDict
 
 from data.reader import FEATURE_COLUMNS
 
@@ -11,14 +11,18 @@ FEATURE_ORDER = FEATURE_COLUMNS
 
 
 class SessionFeatures(BaseModel):
-    mouse_distance_px: Optional[float] = None
-    mouse_speed_mean_px_s: Optional[float] = None
-    mouse_speed_std_px_s: Optional[float] = None
-    direction_change_count: Optional[int] = None
-    click_count: Optional[int] = None
-    click_interval_mean_ms: Optional[float] = None
-    scroll_event_count: Optional[int] = None
-    scroll_distance_px: Optional[float] = None
+    model_config = ConfigDict(extra="forbid")
+
+    # Même ordre que FEATURE_COLUMNS (data/reader.py).
+    # Optional[float] sans "= None" : la clé doit être présente, la valeur peut être null.
+    mouse_distance_px: float
+    mouse_speed_mean_px_s: Optional[float]
+    mouse_speed_std_px_s: Optional[float]
+    direction_change_count: int
+    click_count: int
+    click_interval_mean_ms: Optional[float]
+    scroll_event_count: int
+    scroll_distance_px: float
 
 
 class PredictInput(BaseModel):
