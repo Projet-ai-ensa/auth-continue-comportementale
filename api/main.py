@@ -1,6 +1,7 @@
 from fastapi import FastAPI  # type: ignore[import-not-found]
 
 from api.schemas import Observation
+from models.interface import PredictInput, predict
 
 app = FastAPI()
 
@@ -14,11 +15,18 @@ def receive_observation(observation: Observation):
         or features.mouse_distance_px > 0
     )
 
+    # A window without observed activity has insufficient evidence to classify.
+    # Keep the ML interface separate from the HTTP endpoint.
+    model_result = None
+    if has_activity:
+        model_input = PredictInput.model_validate(observation.model_dump(mode="json"))
+        model_result = predict(model_input)
+
     return {
         "session_id": observation.session_id,
         "window_id": observation.window_id,
-        "prediction": "HUMAN" if has_activity else None,
-        "risk_level": "LOW" if has_activity else None,
-        "model_version": "mock-v0",
+        "prediction": model_result.prediction if model_result else None,
+        "risk_level": "LOW" if model_result else None,
+        "model_version": model_result.model_version if model_result else "mock-v0",
         "data_quality": "SUFFICIENT" if has_activity else "INSUFFICIENT",
     }
