@@ -5,5 +5,5 @@ pandas
 numpy
 scikit-learn>=1.9.1
 streamlit>=1.40
-httpx2
+httpx
 pydantic
