@@ -26,7 +26,7 @@ def receive_observation(observation: Observation):
         "session_id": observation.session_id,
         "window_id": observation.window_id,
         "prediction": model_result.prediction if model_result else None,
-        "risk_level": "LOW" if model_result else None,
+        "risk_level": "LOW" if model_result and model_result.prediction == "HUMAN" else None,
         "model_version": model_result.model_version if model_result else MODEL_VERSION,
         "data_quality": "SUFFICIENT" if has_activity else "INSUFFICIENT",
     }
