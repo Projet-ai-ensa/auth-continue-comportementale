@@ -1,7 +1,7 @@
 from fastapi import FastAPI  # type: ignore[import-not-found]
 
 from api.schemas import Observation
-from models.interface import PredictInput, predict
+from models.interface import MODEL_VERSION, PredictInput, predict
 
 app = FastAPI()
 
@@ -27,6 +27,6 @@ def receive_observation(observation: Observation):
         "window_id": observation.window_id,
         "prediction": model_result.prediction if model_result else None,
         "risk_level": "LOW" if model_result else None,
-        "model_version": model_result.model_version if model_result else "mock-v0",
+        "model_version": model_result.model_version if model_result else MODEL_VERSION,
         "data_quality": "SUFFICIENT" if has_activity else "INSUFFICIENT",
     }
