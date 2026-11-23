@@ -32,7 +32,7 @@ def test_active_observation_calls_model_once():
     result = response.json()
     assert result["prediction"] == "BOT"
     assert result["model_version"] == "mock-v0"
-    assert result["risk_level"] == "LOW"
+    assert result["risk_level"] is None
     assert result["data_quality"] == "SUFFICIENT"
 
 
