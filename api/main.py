@@ -1,9 +1,11 @@
 from fastapi import FastAPI  # type: ignore[import-not-found]
 
+from api.keyboard import router as keyboard_router
 from api.schemas import Observation
 from models.interface import MODEL_VERSION, PredictInput, predict
 
 app = FastAPI()
+app.include_router(keyboard_router)
 
 
 @app.post("/v1/observations")
