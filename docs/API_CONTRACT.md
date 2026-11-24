@@ -2,6 +2,10 @@
 
 Ce document propose une première interface entre le collecteur et FastAPI. Le schéma reste à valider par Imrane et Hiba avant le développement.
 
+Le [prototype clavier agrégé](KEYBOARD_OBSERVATION_PROTOTYPE.md) décrit la
+route de validation locale `POST /v1/keyboard-observations`. Le contrat
+navigateur `POST /v1/observations` est décrit ci-dessous.
+
 ## 1. Principes
 
 - JSON avec version de schéma.

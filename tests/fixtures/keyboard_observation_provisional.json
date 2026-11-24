@@ -1,0 +1,22 @@
+{
+  "schema_version": "keyboard-proposal-1",
+  "session_id": "session-demo-001",
+  "window_id": "1",
+  "window_started_at": "2026-11-23T12:00:00Z",
+  "window_duration_ms": 30000,
+  "collector_version": "0.1.0",
+  "keyboard_features": {
+    "hold_count": 11,
+    "hold_mean_ms": 171.57,
+    "flight_count": 10,
+    "flight_mean_ms": 520.45,
+    "flight_min_ms": -26.42
+  },
+  "quality": {
+    "hold_count": 11,
+    "flight_count": 10,
+    "expired_hold_count": 0,
+    "incomplete_flight_count": 0,
+    "status": "collected"
+  }
+}
