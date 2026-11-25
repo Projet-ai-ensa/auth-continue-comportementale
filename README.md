@@ -1,5 +1,7 @@
 # Détection comportementale des bots web par IA
 
+![AI-Based Behavioral Bot Detection academic cover](docs/assets/behavioral-bot-detection-cover.png)
+
 > **Nom du projet :** AI-Based Behavioral Bot Detection  
 > **Équipe :** Imrane, Hiba, Saad, Chahd et Yahya  
 > **Contexte :** projet universitaire d'intelligence artificielle  
