@@ -58,7 +58,70 @@ Use the window as the prediction unit and retain session IDs throughout. With on
 3. Fit imputation, scaling, model selection, and decision thresholds using training data only. Use grouped internal validation if the group counts support it. Otherwise predefine a small set of fixed settings. Keep held-out scores out of all tuning.
 4. Compare a training-majority predictor and an activity-count baseline with regularized logistic regression using the eight features. Consider a random forest as an exploratory comparison if the data support it. Use identical test groups across comparisons. Keep synthetic fixtures for integration tests.
 
-Treat BOT as the positive class. Report confusion counts, false positive rate (FP / (FP + TN)), false negative rate (FN / (FN + TP)), precision (TP / (TP + FP)), recall (TP / (TP + FN)), and F1 (the harmonic mean of precision and recall). Flag zero-denominator metrics as undefined, and give denominators, class balance, and decision threshold. Report pooled out-of-fold counts and variation across participants, bot configurations, and tasks. Report abstentions or unusable observations with their denominators and give coverage alongside classification metrics so excluded windows remain visible.
+### Confusion matrix and notation
+
+Encode the experimental ground truth as $y_i=1$ for BOT and $y_i=0$ for HUMAN. Let $\hat{y}_i$ be the predicted class for observation window $i$. Compute the following counts over the set $\mathcal{C}$ of eligible held-out windows that receive a binary prediction. Each window contributes once to a pooled evaluation.
+
+| Ground truth | Predicted BOT ($\hat{y}=1$) | Predicted HUMAN ($\hat{y}=0$) |
+| --- | --- | --- |
+| BOT ($y=1$) | True positive (TP) | **False negative (FN)** |
+| HUMAN ($y=0$) | **False positive (FP)** | True negative (TN) |
+
+Using the indicator function $\mathbf{1}[\cdot]$, which equals one when its condition holds and zero otherwise,
+
+$$
+\begin{aligned}
+\mathrm{TP} &= \sum_{i\in\mathcal{C}} \mathbf{1}[y_i=1\land\hat{y}_i=1], &
+\mathrm{FN} &= \sum_{i\in\mathcal{C}} \mathbf{1}[y_i=1\land\hat{y}_i=0],\\
+\mathrm{FP} &= \sum_{i\in\mathcal{C}} \mathbf{1}[y_i=0\land\hat{y}_i=1], &
+\mathrm{TN} &= \sum_{i\in\mathcal{C}} \mathbf{1}[y_i=0\land\hat{y}_i=0].
+\end{aligned}
+$$
+
+### False positive and false negative rates
+
+**False positive rate (FPR)** measures the fraction of classified human windows incorrectly flagged as automated. It describes the burden of false alerts on legitimate participants.
+
+$$
+\boxed{\mathrm{FPR}=\frac{\mathrm{FP}}{\mathrm{FP}+\mathrm{TN}}}
+$$
+
+**False negative rate (FNR)** measures the fraction of classified bot windows incorrectly accepted as human. It describes missed automation within the tested configurations.
+
+$$
+\boxed{\mathrm{FNR}=\frac{\mathrm{FN}}{\mathrm{FN}+\mathrm{TP}}}
+$$
+
+### Precision, recall, and F1
+
+**Precision** measures how often a BOT prediction is correct. **Recall** measures the fraction of classified bot windows successfully detected. **F1** combines precision and recall through their harmonic mean.
+
+$$
+\mathrm{Precision}=\frac{\mathrm{TP}}{\mathrm{TP}+\mathrm{FP}},
+\qquad
+\mathrm{Recall}=\frac{\mathrm{TP}}{\mathrm{TP}+\mathrm{FN}}=1-\mathrm{FNR}
+$$
+
+$$
+\mathrm{F}_1=
+\frac{2\,\mathrm{Precision}\,\mathrm{Recall}}{\mathrm{Precision}+\mathrm{Recall}}
+=\frac{2\mathrm{TP}}{2\mathrm{TP}+\mathrm{FP}+\mathrm{FN}}
+$$
+
+Use the count-based F1 expression when its denominator is positive. The harmonic-mean equality applies when its terms are defined. Report a metric as undefined when its defining denominator is zero, with the supporting counts. All rates lie between zero and one when defined. Multiply by 100 to express them as percentages.
+
+### Coverage and reporting
+
+Let $N_{\mathrm{eligible}}$ count all eligible held-out windows, including those receiving an abstention. Report classification coverage alongside the metrics above.
+
+$$
+\mathrm{Coverage}=\frac{|\mathcal{C}|}{N_{\mathrm{eligible}}}
+=\frac{\mathrm{TP}+\mathrm{TN}+\mathrm{FP}+\mathrm{FN}}{N_{\mathrm{eligible}}}
+$$
+
+Report abstentions by true class and record unusable observations and collection failures separately with their denominators and exclusion reasons. These records make the effect of quality filtering visible. Report pooled out-of-fold counts and variation across participants, bot configurations, and tasks. State the class balance and any decision threshold, selected using training/validation data. Precision depends on the tested class balance, so include it when interpreting results.
+
+### Uncertainty
 
 Show per-group results and ranges as descriptive uncertainty. If enough independent groups are available, use a grouped bootstrap over participants and automation configurations, preserving their nested sessions, and identify the interval method. With only five volunteers, any interval is exploratory. The team-only sample, repeated tasks, and controlled automation limit external validity.
 
@@ -69,5 +132,7 @@ Explain the tasks, signals, storage, access, retention, and withdrawal process b
 Version the task page, collector, feature definitions, automation configurations, environment, split procedure, and evaluation settings. Record data revisions and quality exclusions in a private experiment manifest. Use synthetic payloads for examples and tests. Publish only approved aggregate results. The [dataset and evaluation notes](DATASETS_AND_EVALUATION.md) cover broader research directions.
 
 ## GitHub workflow
+
+The [code component guide](CODE_GUIDE.md) explains the current modules, their inputs and outputs, and how they support this protocol.
 
 Create one branch per component or documentation change and open a pull request against `main`. Push work in progress early so teammates can review interfaces using synthetic fixtures. Ask the collector and API owners to review units, null handling, and payload compatibility. Ask the data and modeling owners to review label joins, grouping, and split checks. Use integration review to verify the page, API, and model wiring. Include the rationale, test evidence, and any protocol deviations in each PR. Merge through review and checks. See [team roles and workflow](TEAM_AND_WORKFLOW.md) and the [repository README](../README.md).
