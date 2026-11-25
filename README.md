@@ -5,6 +5,8 @@
 > **Contexte :** projet universitaire d'intelligence artificielle  
 > **Statut :** recherche, spécification et préparation du MVP
 
+**Current MVP study:** [Scientific protocol for behavioral bot detection (English)](docs/SCIENTIFIC_PROTOCOL.md). The project overview below records the broader research roadmap.
+
 ## 1. Présentation
 
 Ce projet étudie l'utilisation de l'apprentissage automatique pour distinguer les sessions de navigation humaines des sessions automatisées sur un site web de test.
