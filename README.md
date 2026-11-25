@@ -9,6 +9,8 @@
 
 **Current MVP study:** [Scientific protocol for behavioral bot detection (English)](docs/SCIENTIFIC_PROTOCOL.md). The project overview below records the broader research roadmap.
 
+[Code component guide (English)](docs/CODE_GUIDE.md) explains the modules, highlighted code examples, and their role in the experiment.
+
 ## 1. Présentation
 
 Ce projet étudie l'utilisation de l'apprentissage automatique pour distinguer les sessions de navigation humaines des sessions automatisées sur un site web de test.
