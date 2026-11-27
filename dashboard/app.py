@@ -1,7 +1,11 @@
+import plotly.express as px
 import streamlit as st
 
-from dashboard.metrics import average_by_label, summarize
+from dashboard.metrics import average_by_label, filter_windows, summarize
 from data.reader import FEATURE_COLUMNS, read_features
+
+# Same colours everywhere: red = bot, blue = human
+COLORS = {"bot": "#e4572e", "human": "#2e86de"}
 
 st.set_page_config(page_title="Bot Detection Dashboard", layout="wide")
 
@@ -13,10 +17,13 @@ df = read_features("data/synthetic_features.csv")
 
 # --- Filters (left sidebar) ---
 st.sidebar.header("Filters")
-labels = st.sidebar.multiselect(
-    "Label", options=sorted(df["label"].unique()), default=sorted(df["label"].unique())
-)
-df = df[df["label"].isin(labels)]
+all_labels = sorted(df["label"].unique())
+labels = st.sidebar.multiselect("Label", options=all_labels, default=all_labels)
+
+all_bot_types = sorted(df["bot_config"].dropna().unique())
+bot_types = st.sidebar.multiselect("Bot type", options=all_bot_types, default=all_bot_types)
+
+df = filter_windows(df, labels, bot_types)
 
 if df.empty:
     st.warning("No data for these filters.")
@@ -35,17 +42,21 @@ col4.metric("Bot windows", f"{summary['bot_share']:.0f} %")
 st.subheader("Average per label")
 feature = st.selectbox("Measurement", FEATURE_COLUMNS, index=1)
 averages = average_by_label(df, feature)
-st.bar_chart(averages, x="label", y=feature)
+fig = px.bar(averages, x="label", y=feature, color="label", color_discrete_map=COLORS)
+st.plotly_chart(fig, width="stretch")
 
 # --- Speed vs how much it varies ---
 st.subheader("Mouse speed vs speed variation")
 st.caption("Humans: medium speed, lots of variation. Simple bots: fast and very regular.")
-st.scatter_chart(
+fig = px.scatter(
     df,
     x="mouse_speed_mean_px_s",
     y="mouse_speed_std_px_s",
     color="label",
+    color_discrete_map=COLORS,
+    hover_data=["participant_id", "session_id", "bot_config"],
 )
+st.plotly_chart(fig, width="stretch")
 
 # --- Table ---
 st.subheader("All observation windows")
