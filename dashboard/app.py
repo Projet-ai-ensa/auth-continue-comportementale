@@ -1,8 +1,17 @@
+import pandas as pd
 import plotly.express as px
 import streamlit as st
 
-from dashboard.metrics import average_by_label, filter_windows, summarize
+from dashboard.metrics import (
+    average_by_label,
+    confusion_counts,
+    detection_rates,
+    filter_windows,
+    predict_windows,
+    summarize,
+)
 from data.reader import FEATURE_COLUMNS, read_features
+from models.interface import MODEL_VERSION, PredictInput, predict
 
 # Same colours everywhere: red = bot, blue = human
 COLORS = {"bot": "#e4572e", "human": "#2e86de"}
@@ -57,6 +66,47 @@ fig = px.scatter(
     hover_data=["participant_id", "session_id", "bot_config"],
 )
 st.plotly_chart(fig, width="stretch")
+
+
+# --- Model results ---
+def ask_model(session_id, window_id, features):
+    # Build the same input the API sends to the model, then ask the model
+    data = PredictInput(
+        session_id=session_id,
+        window_id=window_id,
+        window_started_at="",
+        window_duration_ms=30000,
+        collector_version="dashboard-csv",
+        browser_features=features,
+    )
+    return predict(data).prediction
+
+
+def pct(value):
+    return "n/a" if value is None else f"{value:.0f} %"
+
+
+df = predict_windows(df, ask_model)
+counts = confusion_counts(df)
+rates = detection_rates(counts)
+
+st.subheader("Model results")
+st.caption(f"Model version: {MODEL_VERSION}")
+
+col1, col2 = st.columns(2)
+col1.metric("Bots caught", pct(rates["bots_caught_pct"]))
+col2.metric("Humans wrongly flagged", pct(rates["humans_flagged_pct"]))
+
+st.markdown("**Confusion matrix** (rows = truth, columns = model's answer)")
+st.table(
+    pd.DataFrame(
+        {
+            "Model says BOT": [counts["bots_caught"], counts["humans_flagged"]],
+            "Model says HUMAN": [counts["bots_missed"], counts["humans_ok"]],
+        },
+        index=["Really a bot", "Really a human"],
+    )
+)
 
 # --- Table ---
 st.subheader("All observation windows")

@@ -1,6 +1,13 @@
 import pandas as pd
 
-from dashboard.metrics import average_by_label, filter_windows, summarize
+from dashboard.metrics import (
+    average_by_label,
+    confusion_counts,
+    detection_rates,
+    filter_windows,
+    predict_windows,
+    summarize,
+)
 from data.reader import read_features
 
 
@@ -56,3 +63,41 @@ def test_filter_keeps_humans_and_chosen_bot_type():
 def test_filter_by_label_only_bots():
     out = filter_windows(make_bot_df(), ["bot"], ["linear-fast", "no-mouse"])
     assert list(out["label"]) == ["bot", "bot"]
+
+
+# --- Model results ---
+
+def make_truth_df():
+    # 2 bots + 2 humans, with the model's answer already filled in
+    return pd.DataFrame({
+        "label": ["bot", "bot", "human", "human"],
+        "prediction": ["BOT", "HUMAN", "BOT", "HUMAN"],
+    })
+
+
+def test_confusion_counts():
+    counts = confusion_counts(make_truth_df())
+    assert counts == {"bots_caught": 1, "bots_missed": 1, "humans_flagged": 1, "humans_ok": 1}
+
+
+def test_detection_rates():
+    rates = detection_rates(confusion_counts(make_truth_df()))
+    assert rates["bots_caught_pct"] == 50.0
+    assert rates["humans_flagged_pct"] == 50.0
+
+
+def test_rates_without_bots_do_not_crash():
+    df = make_truth_df()
+    humans_only = df[df["label"] == "human"]
+    rates = detection_rates(confusion_counts(humans_only))
+    assert rates["bots_caught_pct"] is None
+
+
+def test_predict_windows_uses_the_given_model():
+    # A fake model that says BOT when the mouse is very fast
+    def fake_model(session_id, window_id, features):
+        speed = features["mouse_speed_mean_px_s"]
+        return "BOT" if speed is not None and speed > 300 else "HUMAN"
+
+    df = predict_windows(read_features("data/synthetic_features.csv"), fake_model)
+    assert list(df["prediction"]) == ["HUMAN", "HUMAN", "HUMAN", "BOT", "BOT", "HUMAN"]
