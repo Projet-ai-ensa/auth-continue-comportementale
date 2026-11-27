@@ -7,3 +7,4 @@ scikit-learn>=1.9.1
 streamlit>=1.40
 httpx
 pydantic
+plotly>=5.24

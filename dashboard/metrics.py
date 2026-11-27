@@ -14,3 +14,13 @@ def summarize(df):
 
 def average_by_label(df, feature):
     return df.groupby("label")[feature].mean().reset_index()
+
+
+def filter_windows(df, labels, bot_types):
+    # Keep only the chosen labels (human, bot)
+    keep = df["label"].isin(labels)
+    # For bots, keep only the chosen bot types.
+    # Humans have no bot type, so this filter never removes them.
+    is_bot = df["label"] == "bot"
+    keep = keep & (~is_bot | df["bot_config"].isin(bot_types))
+    return df[keep]

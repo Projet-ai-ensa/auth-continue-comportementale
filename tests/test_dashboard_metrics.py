@@ -1,6 +1,6 @@
 import pandas as pd
 
-from dashboard.metrics import average_by_label, summarize
+from dashboard.metrics import average_by_label, filter_windows, summarize
 from data.reader import read_features
 
 
@@ -35,3 +35,24 @@ def test_summary_on_team_csv():
     s = summarize(read_features("data/synthetic_features.csv"))
     assert s["windows"] == 6
     assert s["bot_share"] == 50.0
+
+
+# --- Bot type filter ---
+
+def make_bot_df():
+    # 1 human (no bot type) + 2 bots of different types
+    return pd.DataFrame({
+        "label": ["human", "bot", "bot"],
+        "bot_config": [None, "linear-fast", "no-mouse"],
+    })
+
+
+def test_filter_keeps_humans_and_chosen_bot_type():
+    out = filter_windows(make_bot_df(), ["human", "bot"], ["linear-fast"])
+    assert list(out["label"]) == ["human", "bot"]
+    assert list(out["bot_config"].dropna()) == ["linear-fast"]
+
+
+def test_filter_by_label_only_bots():
+    out = filter_windows(make_bot_df(), ["bot"], ["linear-fast", "no-mouse"])
+    assert list(out["label"]) == ["bot", "bot"]
