@@ -27,7 +27,17 @@ Responsabilité : fournir les pages et les interactions de test. Il ne décide p
 
 ### Collecteur — `collector/`
 
-Responsabilité : observer les événements autorisés, calculer des caractéristiques agrégées et envoyer une fenêtre de données. Le collecteur ne doit pas enregistrer le texte saisi.
+Responsabilité : observer les événements autorisés, calculer
+des caractéristiques agrégées et transmettre les fenêtres
+de données.
+
+Le collecteur est développé en Python dans `collector/python/`.
+Il comprend la capture clavier et souris, le calcul des
+caractéristiques, l'évaluation de la qualité des données,
+la gestion des fenêtres temporelles et un client HTTP.
+
+Le collecteur ne doit jamais enregistrer le texte saisi,
+les caractères des touches ou les mots de passe.
 
 ### API — `api/`
 
